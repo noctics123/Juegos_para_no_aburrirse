@@ -3,107 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game - Juegos para no aburrirse</title>
+    <title>Space Breakout - Juegos para no aburrirse</title>
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at center, #1e3c72 0%, #2a5298 50%, #000428 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Arial', sans-serif;
-            color: white;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            overflow: hidden;
         }
 
         .game-container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
 
         h1 {
+            font-size: 2.5em;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; }
+            to { text-shadow: 0 0 30px #ff00ff, 0 0 60px #ff00ff; }
         }
 
         canvas {
-            border: 3px solid #fff;
+            border: 3px solid #00ffff;
             border-radius: 10px;
-            background: #000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(180deg, #000428 0%, #004e92 100%);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
         }
 
-        .score {
-            font-size: 24px;
+        .hud {
+            display: flex;
+            justify-content: space-between;
             margin: 20px 0;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            font-size: 1.2em;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .power-up-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            max-width: 200px;
         }
 
         .controls {
             margin-top: 20px;
-            font-size: 16px;
+            font-size: 1em;
             opacity: 0.8;
         }
 
         .game-over {
-            color: #ff6b6b;
-            font-size: 28px;
-            font-weight: bold;
-            margin: 20px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            text-align: center;
+            display: none;
         }
 
         button {
-            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
             border: none;
             color: white;
-            padding: 12px 24px;
+            padding: 15px 30px;
             font-size: 16px;
             border-radius: 25px;
             cursor: pointer;
             margin: 10px;
-            transition: transform 0.2s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
         }
 
         .mobile-controls {
             display: none;
             margin-top: 20px;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 200px;
-            margin-left: auto;
-            margin-right: auto;
+            justify-content: center;
+            gap: 20px;
         }
 
         .mobile-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid #00ffff;
             color: white;
-            padding: 15px;
+            padding: 20px;
             font-size: 18px;
-            border-radius: 10px;
+            border-radius: 50%;
             cursor: pointer;
             user-select: none;
-        }
-
-        .mobile-btn:active {
-            background: rgba(255, 255, 255, 0.4);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         @media (max-width: 768px) {
             .mobile-controls {
-                display: grid;
+                display: flex;
             }
             .controls {
                 display: none;
@@ -113,179 +137,577 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🐍 Snake Game</h1>
-        <div class="score">Puntuación: <span id="score">0</span></div>
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-        <div id="gameOver" class="game-over" style="display: none;">
-            ¡Juego Terminado!
-            <br>
+        <h1>🚀 SPACE BREAKOUT 🚀</h1>
+        <div class="hud">
+            <div>Puntuación: <span id="score">0</span></div>
+            <div>Vidas: <span id="lives">3</span></div>
+            <div>Nivel: <span id="level">1</span></div>
+        </div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="power-up-info">
+            <div><strong>Power-ups:</strong></div>
+            <div>🔴 Multi-ball</div>
+            <div>🟢 Bigger paddle</div>
+            <div>🔵 Laser paddle</div>
+            <div>🟡 Extra life</div>
+            <div>🟣 Sticky paddle</div>
+        </div>
+        <div id="gameOver" class="game-over">
+            <h2 id="gameOverText">¡Juego Terminado!</h2>
+            <p>Puntuación Final: <span id="finalScore">0</span></p>
             <button onclick="resetGame()">Jugar de Nuevo</button>
         </div>
         <div class="controls">
-            Usa las flechas del teclado para moverte
+            Usa A/D o las flechas para mover • Barra espaciadora para lanzar/disparar
         </div>
         <div class="mobile-controls">
-            <div></div>
-            <div class="mobile-btn" onclick="changeDirection('up')">↑</div>
-            <div></div>
-            <div class="mobile-btn" onclick="changeDirection('left')">←</div>
-            <div class="mobile-btn" onclick="changeDirection('down')">↓</div>
-            <div class="mobile-btn" onclick="changeDirection('right')">→</div>
+            <div class="mobile-btn" id="leftBtn">←</div>
+            <div class="mobile-btn" id="actionBtn">🚀</div>
+            <div class="mobile-btn" id="rightBtn">→</div>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const gameOverElement = document.getElementById('gameOver');
 
-        const gridSize = 20;
-        const tileCount = canvas.width / gridSize;
-
-        let snake = [
-            {x: 10, y: 10}
-        ];
-        let food = {};
-        let dx = 0;
-        let dy = 0;
+        // Game state
+        let gameState = 'waiting'; // waiting, playing, gameOver
         let score = 0;
-        let gameRunning = true;
+        let lives = 3;
+        let level = 1;
 
-        function randomFood() {
-            food = {
-                x: Math.floor(Math.random() * tileCount),
-                y: Math.floor(Math.random() * tileCount)
-            };
-        }
+        // Paddle
+        const paddle = {
+            x: canvas.width / 2 - 60,
+            y: canvas.height - 30,
+            width: 120,
+            height: 15,
+            speed: 8,
+            hasLaser: false,
+            laserCooldown: 0,
+            isSticky: false,
+            stickyBalls: []
+        };
 
-        function drawGame() {
-            // Limpiar canvas
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Balls
+        let balls = [{
+            x: canvas.width / 2,
+            y: paddle.y - 20,
+            radius: 8,
+            dx: 0,
+            dy: 0,
+            stuck: true
+        }];
 
-            // Dibujar snake
-            ctx.fillStyle = '#4ecdc4';
-            for (let segment of snake) {
-                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
-            }
+        // Blocks
+        let blocks = [];
+        const blockRows = 8;
+        const blockCols = 10;
+        const blockWidth = 75;
+        const blockHeight = 25;
+        const blockPadding = 5;
 
-            // Dibujar cabeza de la snake con color diferente
-            ctx.fillStyle = '#44a08d';
-            ctx.fillRect(snake[0].x * gridSize, snake[0].y * gridSize, gridSize - 2, gridSize - 2);
+        // Power-ups
+        let powerUps = [];
+        const powerUpTypes = [
+            { type: 'multiball', color: '#ff4444', symbol: '🔴' },
+            { type: 'bigpaddle', color: '#44ff44', symbol: '🟢' },
+            { type: 'laser', color: '#4444ff', symbol: '🔵' },
+            { type: 'extralife', color: '#ffff44', symbol: '🟡' },
+            { type: 'sticky', color: '#ff44ff', symbol: '🟣' }
+        ];
 
-            // Dibujar comida
-            ctx.fillStyle = '#ff6b6b';
-            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
-        }
+        // Particles
+        let particles = [];
+        let lasers = [];
 
-        function moveSnake() {
-            if (!gameRunning) return;
+        // Input
+        const keys = {};
 
-            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+        // Initialize blocks
+        function createBlocks() {
+            blocks = [];
+            const colors = ['#ff4444', '#ff8844', '#ffff44', '#44ff44', '#44ffff', '#4444ff', '#8844ff', '#ff44ff'];
 
-            // Verificar colisiones con paredes
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-                gameOver();
-                return;
-            }
-
-            // Verificar colisiones consigo misma
-            for (let segment of snake) {
-                if (head.x === segment.x && head.y === segment.y) {
-                    gameOver();
-                    return;
+            for (let row = 0; row < blockRows; row++) {
+                for (let col = 0; col < blockCols; col++) {
+                    blocks.push({
+                        x: col * (blockWidth + blockPadding) + blockPadding + 10,
+                        y: row * (blockHeight + blockPadding) + blockPadding + 50,
+                        width: blockWidth,
+                        height: blockHeight,
+                        color: colors[row],
+                        destroyed: false,
+                        hits: Math.floor(row / 2) + 1
+                    });
                 }
             }
+        }
 
-            snake.unshift(head);
-
-            // Verificar si comió la comida
-            if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                scoreElement.textContent = score;
-                randomFood();
-            } else {
-                snake.pop();
+        // Particle system
+        function createParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 10,
+                    dy: (Math.random() - 0.5) * 10,
+                    life: 30,
+                    color: color,
+                    size: Math.random() * 4 + 2
+                });
             }
+        }
+
+        // Power-up functions
+        function createPowerUp(x, y) {
+            if (Math.random() < 0.3) { // 30% chance
+                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                powerUps.push({
+                    x: x,
+                    y: y,
+                    width: 30,
+                    height: 30,
+                    dy: 2,
+                    type: type.type,
+                    color: type.color,
+                    symbol: type.symbol
+                });
+            }
+        }
+
+        function activatePowerUp(type) {
+            switch (type) {
+                case 'multiball':
+                    if (balls.length < 5) {
+                        for (let i = 0; i < 2; i++) {
+                            balls.push({
+                                x: balls[0].x,
+                                y: balls[0].y,
+                                radius: 8,
+                                dx: (Math.random() - 0.5) * 8,
+                                dy: -Math.abs(Math.random() * 4 + 2),
+                                stuck: false
+                            });
+                        }
+                    }
+                    break;
+                case 'bigpaddle':
+                    paddle.width = Math.min(200, paddle.width + 40);
+                    setTimeout(() => paddle.width = 120, 10000);
+                    break;
+                case 'laser':
+                    paddle.hasLaser = true;
+                    setTimeout(() => paddle.hasLaser = false, 15000);
+                    break;
+                case 'extralife':
+                    lives++;
+                    break;
+                case 'sticky':
+                    paddle.isSticky = true;
+                    setTimeout(() => paddle.isSticky = false, 12000);
+                    break;
+            }
+        }
+
+        // Collision detection
+        function ballBlockCollision(ball, block) {
+            return ball.x + ball.radius > block.x &&
+                   ball.x - ball.radius < block.x + block.width &&
+                   ball.y + ball.radius > block.y &&
+                   ball.y - ball.radius < block.y + block.height;
+        }
+
+        function ballPaddleCollision(ball) {
+            return ball.x > paddle.x &&
+                   ball.x < paddle.x + paddle.width &&
+                   ball.y + ball.radius > paddle.y &&
+                   ball.y - ball.radius < paddle.y + paddle.height;
+        }
+
+        // Game logic
+        function updateBalls() {
+            balls.forEach((ball, ballIndex) => {
+                if (!ball.stuck) {
+                    ball.x += ball.dx;
+                    ball.y += ball.dy;
+
+                    // Wall collisions
+                    if (ball.x <= ball.radius || ball.x >= canvas.width - ball.radius) {
+                        ball.dx = -ball.dx;
+                        createParticles(ball.x, ball.y, '#00ffff', 5);
+                    }
+                    if (ball.y <= ball.radius) {
+                        ball.dy = -ball.dy;
+                        createParticles(ball.x, ball.y, '#00ffff', 5);
+                    }
+
+                    // Paddle collision
+                    if (ballPaddleCollision(ball) && ball.dy > 0) {
+                        if (paddle.isSticky && !ball.stuck) {
+                            ball.stuck = true;
+                            ball.stuckOffset = ball.x - paddle.x;
+                            paddle.stickyBalls.push(ballIndex);
+                        } else {
+                            const hitPos = (ball.x - paddle.x) / paddle.width;
+                            ball.dx = (hitPos - 0.5) * 8;
+                            ball.dy = -Math.abs(ball.dy);
+                            createParticles(ball.x, ball.y, '#00ff00', 8);
+                        }
+                    }
+
+                    // Block collisions
+                    blocks.forEach((block, blockIndex) => {
+                        if (!block.destroyed && ballBlockCollision(ball, block)) {
+                            block.hits--;
+                            if (block.hits <= 0) {
+                                block.destroyed = true;
+                                score += 10 * level;
+                                createParticles(block.x + block.width/2, block.y + block.height/2, block.color, 15);
+                                createPowerUp(block.x + block.width/2, block.y + block.height/2);
+                            }
+
+                            // Simple collision response
+                            ball.dy = -ball.dy;
+                        }
+                    });
+
+                    // Bottom collision (lose ball)
+                    if (ball.y > canvas.height) {
+                        balls.splice(ballIndex, 1);
+                    }
+                } else if (ball.stuck && ball.stuckOffset !== undefined) {
+                    ball.x = paddle.x + ball.stuckOffset;
+                    ball.y = paddle.y - ball.radius;
+                }
+            });
+
+            // Check if all balls lost
+            if (balls.length === 0) {
+                lives--;
+                if (lives <= 0) {
+                    gameOver();
+                } else {
+                    resetBall();
+                }
+            }
+        }
+
+        function updatePowerUps() {
+            powerUps.forEach((powerUp, index) => {
+                powerUp.y += powerUp.dy;
+
+                // Check collision with paddle
+                if (powerUp.x < paddle.x + paddle.width &&
+                    powerUp.x + powerUp.width > paddle.x &&
+                    powerUp.y < paddle.y + paddle.height &&
+                    powerUp.y + powerUp.height > paddle.y) {
+                    activatePowerUp(powerUp.type);
+                    powerUps.splice(index, 1);
+                    createParticles(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.color, 10);
+                } else if (powerUp.y > canvas.height) {
+                    powerUps.splice(index, 1);
+                }
+            });
+        }
+
+        function updateParticles() {
+            particles.forEach((particle, index) => {
+                particle.x += particle.dx;
+                particle.y += particle.dy;
+                particle.life--;
+                particle.dy += 0.2; // gravity
+
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        function updateLasers() {
+            if (paddle.laserCooldown > 0) paddle.laserCooldown--;
+
+            lasers.forEach((laser, index) => {
+                laser.y -= laser.speed;
+
+                // Check block collisions
+                blocks.forEach(block => {
+                    if (!block.destroyed &&
+                        laser.x > block.x && laser.x < block.x + block.width &&
+                        laser.y > block.y && laser.y < block.y + block.height) {
+                        block.hits--;
+                        if (block.hits <= 0) {
+                            block.destroyed = true;
+                            score += 10 * level;
+                            createParticles(block.x + block.width/2, block.y + block.height/2, block.color, 10);
+                        }
+                        lasers.splice(index, 1);
+                    }
+                });
+
+                if (laser.y < 0) {
+                    lasers.splice(index, 1);
+                }
+            });
+        }
+
+        function checkLevelComplete() {
+            if (blocks.every(block => block.destroyed)) {
+                level++;
+                createBlocks();
+                resetBall();
+                // Increase difficulty
+                balls[0].dy = Math.min(-8, balls[0].dy - 0.5);
+            }
+        }
+
+        // Drawing functions
+        function drawBall(ball) {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ffff';
+            ctx.fill();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ffff';
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.shadowBlur = 0;
+            if (paddle.hasLaser) {
+                ctx.fillStyle = '#ff00ff';
+            } else if (paddle.isSticky) {
+                ctx.fillStyle = '#ffff00';
+            } else {
+                ctx.fillStyle = '#00ff00';
+            }
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+            if (paddle.hasLaser) {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff00ff';
+            }
+        }
+
+        function drawBlocks() {
+            ctx.shadowBlur = 0;
+            blocks.forEach(block => {
+                if (!block.destroyed) {
+                    ctx.fillStyle = block.color;
+                    ctx.fillRect(block.x, block.y, block.width, block.height);
+
+                    // Draw hit indicator
+                    if (block.hits > 1) {
+                        ctx.fillStyle = 'white';
+                        ctx.font = '12px Arial';
+                        ctx.fillText(block.hits, block.x + 5, block.y + 18);
+                    }
+                }
+            });
+        }
+
+        function drawPowerUps() {
+            powerUps.forEach(powerUp => {
+                ctx.fillStyle = powerUp.color;
+                ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Arial';
+                ctx.fillText(powerUp.symbol, powerUp.x + 5, powerUp.y + 22);
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(particle => {
+                ctx.globalAlpha = particle.life / 30;
+                ctx.fillStyle = particle.color;
+                ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function drawLasers() {
+            ctx.fillStyle = '#ff00ff';
+            lasers.forEach(laser => {
+                ctx.fillRect(laser.x - 2, laser.y, 4, 15);
+            });
+        }
+
+        function draw() {
+            // Clear canvas with space background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw stars
+            for (let i = 0; i < 50; i++) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1, 1);
+            }
+
+            drawBlocks();
+            drawPaddle();
+            balls.forEach(drawBall);
+            drawPowerUps();
+            drawParticles();
+            drawLasers();
+        }
+
+        function resetBall() {
+            balls = [{
+                x: paddle.x + paddle.width / 2,
+                y: paddle.y - 20,
+                radius: 8,
+                dx: 0,
+                dy: 0,
+                stuck: true
+            }];
+            gameState = 'waiting';
         }
 
         function gameOver() {
-            gameRunning = false;
-            gameOverElement.style.display = 'block';
+            gameState = 'gameOver';
+            document.getElementById('gameOverText').textContent = lives <= 0 ? '¡Juego Terminado!' : '¡Felicidades!';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOver').style.display = 'block';
         }
 
         function resetGame() {
-            snake = [{x: 10, y: 10}];
-            dx = 0;
-            dy = 0;
             score = 0;
-            scoreElement.textContent = score;
-            gameRunning = true;
-            gameOverElement.style.display = 'none';
-            randomFood();
+            lives = 3;
+            level = 1;
+            paddle.width = 120;
+            paddle.hasLaser = false;
+            paddle.isSticky = false;
+            paddle.stickyBalls = [];
+            powerUps = [];
+            particles = [];
+            lasers = [];
+            createBlocks();
+            resetBall();
+            gameState = 'waiting';
+            document.getElementById('gameOver').style.display = 'none';
         }
 
-        function changeDirection(direction) {
-            if (!gameRunning) return;
-
-            switch(direction) {
-                case 'up':
-                    if (dy !== 1) {
-                        dx = 0;
-                        dy = -1;
-                    }
-                    break;
-                case 'down':
-                    if (dy !== -1) {
-                        dx = 0;
-                        dy = 1;
-                    }
-                    break;
-                case 'left':
-                    if (dx !== 1) {
-                        dx = -1;
-                        dy = 0;
-                    }
-                    break;
-                case 'right':
-                    if (dx !== -1) {
-                        dx = 1;
-                        dy = 0;
-                    }
-                    break;
+        function shootLaser() {
+            if (paddle.hasLaser && paddle.laserCooldown <= 0) {
+                lasers.push({
+                    x: paddle.x + paddle.width / 2,
+                    y: paddle.y,
+                    speed: 10
+                });
+                paddle.laserCooldown = 10;
             }
         }
 
+        function launchBalls() {
+            balls.forEach(ball => {
+                if (ball.stuck) {
+                    ball.stuck = false;
+                    ball.dx = (Math.random() - 0.5) * 4;
+                    ball.dy = -4;
+                }
+            });
+
+            if (paddle.stickyBalls.length > 0) {
+                paddle.stickyBalls.forEach(ballIndex => {
+                    if (balls[ballIndex]) {
+                        balls[ballIndex].stuck = false;
+                        balls[ballIndex].dx = (Math.random() - 0.5) * 4;
+                        balls[ballIndex].dy = -4;
+                    }
+                });
+                paddle.stickyBalls = [];
+            }
+
+            gameState = 'playing';
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (gameState === 'playing') {
+                // Update paddle position
+                if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                    paddle.x = Math.max(0, paddle.x - paddle.speed);
+                }
+                if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                    paddle.x = Math.min(canvas.width - paddle.width, paddle.x + paddle.speed);
+                }
+
+                updateBalls();
+                updatePowerUps();
+                updateParticles();
+                updateLasers();
+                checkLevelComplete();
+            } else if (gameState === 'waiting') {
+                // Update paddle position in waiting state
+                if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                    paddle.x = Math.max(0, paddle.x - paddle.speed);
+                    balls[0].x = paddle.x + paddle.width / 2;
+                }
+                if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                    paddle.x = Math.min(canvas.width - paddle.width, paddle.x + paddle.speed);
+                    balls[0].x = paddle.x + paddle.width / 2;
+                }
+            }
+
+            draw();
+
+            // Update HUD
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('level').textContent = level;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners
         document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowUp':
-                    e.preventDefault();
-                    changeDirection('up');
-                    break;
-                case 'ArrowDown':
-                    e.preventDefault();
-                    changeDirection('down');
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    changeDirection('left');
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    changeDirection('right');
-                    break;
+            keys[e.key] = true;
+
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (gameState === 'waiting') {
+                    launchBalls();
+                } else if (gameState === 'playing') {
+                    shootLaser();
+                }
             }
         });
 
-        function gameLoop() {
-            moveSnake();
-            drawGame();
-        }
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
 
-        // Inicializar juego
-        randomFood();
-        setInterval(gameLoop, 150);
+        // Mobile controls
+        document.getElementById('leftBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys['ArrowLeft'] = true;
+        });
+        document.getElementById('leftBtn').addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys['ArrowLeft'] = false;
+        });
+
+        document.getElementById('rightBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys['ArrowRight'] = true;
+        });
+        document.getElementById('rightBtn').addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys['ArrowRight'] = false;
+        });
+
+        document.getElementById('actionBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState === 'waiting') {
+                launchBalls();
+            } else if (gameState === 'playing') {
+                shootLaser();
+            }
+        });
+
+        // Initialize game
+        createBlocks();
+        gameLoop();
     </script>
 </body>
 </html>
